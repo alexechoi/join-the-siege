@@ -90,7 +90,7 @@ logging.info("Classifier training completed.")
 
 # Save the classifier model to a .pkl file
 with open('../models/classifier_model.pkl', 'wb') as model_file:
-    pickle.dump(classifier, model_file)
+    pickle.dump((classifier, vectorizer), model_file)
 logging.info("Classifier model saved as '../models/classifier_model.pkl'.")
 
 # Evaluate the classifier
