@@ -2,75 +2,151 @@
 
 ## Overview
 
-At Heron, we’re using AI to automate document processing workflows in financial services and beyond. Each day, we handle over 100,000 documents that need to be quickly identified and categorised before we can kick off the automations.
+This repository provides a basic endpoint for classifying files based on their content and filename. It includes the ability to generate synthetic data to train a machine learning classifier on document types, deploy the classifier API, and access it via a simple frontend.
 
-This repository provides a basic endpoint for classifying files by their filenames. However, the current classifier has limitations when it comes to handling poorly named files, processing larger volumes, and adapting to new industries effectively.
+The classifier and accompanying API handle various document types, including PDFs, images, Word documents, and Excel files, using a trained model or a simple filename-based approach if content extraction fails. 
 
-**Your task**: improve this classifier by adding features and optimisations to handle (1) poorly named files, (2) scaling to new industries, and (3) processing larger volumes of documents.
+---
 
-This is a real-world challenge that allows you to demonstrate your approach to building innovative and scalable AI solutions. We’re excited to see what you come up with! Feel free to take it in any direction you like, but we suggest:
+## Setup Instructions
 
+### 1. Clone the Repository
 
-### Part 1: Enhancing the Classifier
+```
+git clone <repository_url>
+cd join-the-siege
+```
 
-- What are the limitations in the current classifier that's stopping it from scaling?
-- How might you extend the classifier with additional technologies, capabilities, or features?
+### 2. Python Virtual Environment and Dependencies
 
+Set up a Python virtual environment and install dependencies.
 
-### Part 2: Productionising the Classifier 
+```
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
-- How can you ensure the classifier is robust and reliable in a production environment?
-- How can you deploy the classifier to make it accessible to other services and users?
+## Synthetic Data Generation
 
-We encourage you to be creative! Feel free to use any libraries, tools, services, models or frameworks of your choice
+To generate synthetic data, you can use the provided script ```generate.py``` under ```synthetic-data```. This script will generate synthetic data for various document types and save it to CSV, JSON, and TXT files. It will also train a classifier model and save it to a ```.pkl``` file in the ```models``` directory.
 
-### Possible Ideas / Suggestions
-- Train a classifier to categorize files based on the text content of a file
-- Generate synthetic data to train the classifier on documents from different industries
-- Detect file type and handle other file formats (e.g., Word, Excel)
-- Set up a CI/CD pipeline for automatic testing and deployment
-- Refactor the codebase to make it more maintainable and scalable
+### Generate Synthetic Data
 
-## Marking Criteria
-- **Functionality**: Does the classifier work as expected?
-- **Scalability**: Can the classifier scale to new industries and higher volumes?
-- **Maintainability**: Is the codebase well-structured and easy to maintain?
-- **Creativity**: Are there any innovative or creative solutions to the problem?
-- **Testing**: Are there tests to validate the service's functionality?
-- **Deployment**: Is the classifier ready for deployment in a production environment?
+1. Set OpenAI API Key: If you want to generate synthetic data using OpenAI, you'll need to set the OPENAI_API_KEY environment variable. Add this key to your environment:
 
+```
+export OPENAI_API_KEY='your_openai_api_key'
+```
 
-## Getting Started
-1. Clone the repository:
-    ```shell
-    git clone <repository_url>
-    cd heron_classifier
-    ```
+Alternatively, you can place the key in a ```.env``` file or use a pre-trained model provided in the ```models``` directory if you do not wish to generate new data.
 
-2. Install dependencies:
-    ```shell
-    python -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-    ```
+**2. Run the Data Generation Script:**
 
-3. Run the Flask app:
-    ```shell
-    python -m src.app
-    ```
+```
+cd synthetic-data
+python generate.py
+```
 
-4. Test the classifier using a tool like curl:
-    ```shell
-    curl -X POST -F 'file=@path_to_pdf.pdf' http://127.0.0.1:5000/classify_file
-    ```
+This script will:
 
-5. Run tests:
+- Generate synthetic text data for document types like driver's license, bank statement, invoice, resume, and medical report.
+- Save generated data to CSV, JSON, and TXT files.
+- Train a classifier on the generated data and save the model as ```classifier_model.pkl``` in the models directory.
+
+---
+
+## Running the API
+
+The Flask app exposes an API endpoint for classifying files. The app can be run locally or in a Docker container.
+
+### Running locally
+**1. Start the Flask API:**
+```
+python -m src.app
+```
+
+**Testing the API:**
+You can test the API using ```curl```:
+```
+curl -X POST -F 'file=@path_to_file.pdf' http://127.0.0.1:5000/classify_file
+```
+
+### Running with Docker
+To deploy the API with Docker, use the provided Dockerfile located in the ```src``` directory.
+
+**1. Build the Docker Image:**
+
+```docker build -t file-classifier -f src/Dockerfile .```
+
+**2. Run the Docker Container:**
+
+```docker run -p 8080:8080 file-classifier```
+
+**3. Test the API in Docker:**
+Use the following ```curl``` command to test the API running in Docker:
+
+```curl -X POST -F 'file=@path_to_file.pdf' http://127.0.0.1:8080/classify_file```
+
+---
+
+## Frontend
+
+The frontend is a React application that allows users to upload files and view classification results from the backend API.
+
+### Key Features
+
+- **File Upload**: Allows users to upload files directly from their device.
+- **Spinner**: Displays a loading spinner while awaiting a response from the API.
+- **Error Handling**: Provides error messages if an unsupported file type is uploaded or if the API request fails.
+- **Classification Display**: Shows the classification result of the uploaded file after the API processes it.
+
+### Setting Up the Frontend
+
+1. **Navigate to the Frontend Directory**:
+
    ```shell
-    pytest
-    ```
+   cd frontend```
 
-## Submission
+2. **Install Dependencies**:
 
-Please aim to spend 3 hours on this challenge.
+    ```npm install```
 
-Once completed, submit your solution by sharing a link to your forked repository. Please also provide a brief write-up of your ideas, approach, and any instructions needed to run your solution. 
+3. **Run the Frontend:**:
+
+    ```npm start```
+
+This command starts the frontend on ```http://localhost:3000```. If needed, configure CORS in the Flask API to allow requests from the frontend.
+
+---
+
+## Project Structure
+
+- `src`: Contains the backend Flask API and classifier code.
+  - `app.py`: Main Flask API file.
+  - `classifier.py`: Classifier logic and file classification.
+- `synthetic-data`: Synthetic data generation and model training.
+  - `generate.py`: Script to generate synthetic data and train the model.
+- `models`: Contains pre-trained classifier model.
+- `frontend`: Contains the React frontend code.
+
+---
+
+## Key Features
+
+1. **Synthetic Data Generation**:
+   - Use OpenAI to generate data and train a model.
+   - Pre-trained model included if OpenAI API key is not available.
+
+2. **Classifier API**:
+   - Supports document classification based on content or filename.
+   - Limits file types and sizes to prevent unsupported uploads.
+   - Rate-limited API to prevent abuse.
+
+3. **Frontend**:
+   - Simple React frontend with file upload.
+   - Spinner and error messages for better user experience.
+
+
+
+
